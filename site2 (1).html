@@ -1,0 +1,737 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestion de stock - Maintenance Boisset</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+    }
+    header {
+      background: #111827;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+    header p {
+      margin: 2px 0 0;
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+    .header-left {
+      display: flex;
+      flex-direction: column;
+    }
+    .header-btn {
+      white-space: nowrap;
+    }
+    main {
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+    .card h2 span {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: #6b7280;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px 16px;
+      margin-top: 8px;
+    }
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
+    input, select, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      font-size: 0.85rem;
+    }
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    .full {
+      grid-column: 1 / -1;
+    }
+    button {
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-primary {
+      background: #111827;
+      color: white;
+    }
+    .btn-danger {
+      background: #b91c1c;
+      color: white;
+    }
+    .btn-secondary, .btn-ghost {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #d1d5db;
+    }
+    .actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .toolbar input {
+      max-width: 260px;
+      font-size: 0.9rem;
+      padding: 8px 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th, td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .badge-A { background: #fee2e2; color: #b91c1c; }
+    .badge-B { background: #fef3c7; color: #b45309; }
+    .badge-C { background: #dcfce7; color: #15803d; }
+    .low-stock {
+      background: #fee2e2;
+    }
+    .scroll-table {
+      max-height: 430px;
+      overflow: auto;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .hidden {
+      display: none;
+    }
+
+    /* Bouton d'aide flottant */
+    .help-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #111827;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Panneau d'aide */
+    .help-panel {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      width: min(320px, 90vw);
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      border: 1px solid #e5e7eb;
+      padding: 12px 12px 10px;
+      font-size: 0.85rem;
+      z-index: 50;
+    }
+    .help-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .help-panel-header h3 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .help-close {
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .help-panel ul {
+      padding-left: 18px;
+      margin: 4px 0 4px;
+    }
+    .help-panel li {
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-btn {
+        alignself: stretch;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1>Gestion de stock - Maintenance</h1>
+      <p>Recherche de pièces</p>
+    </div>
+    <button class="btn-primary header-btn" id="btn-toggle-form">
+      Ajouter / modifier une pièce
+    </button>
+  </header>
+
+  <main>
+    <!-- Partie recherche / stock visible par défaut -->
+    <section class="card">
+      <h2>Rechercher une pièce <span>(par désignation, référence, machine...)</span></h2>
+      <div class="toolbar">
+        <input id="search" placeholder="Rechercher (désignation, référence, machine, etc.)" />
+        <select id="filter-famille">
+          <option value="">Toutes familles</option>
+          <option>Mécanique</option>
+          <option>Électricité</option>
+          <option>Visserie</option>
+          <option>Machine</option>
+          <option>Autre</option>
+        </select>
+        <select id="filter-criticite">
+          <option value="">Toutes criticités</option>
+          <option value="A">A critique</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+        </select>
+        <button class="btn-secondary" id="btn-export-csv">Exporter en CSV</button>
+        <button class="btn-ghost" id="btn-clear-storage">Vider la base locale</button>
+      </div>
+      <div class="scroll-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Désignation</th>
+              <th>Famille</th>
+              <th>Machine</th>
+              <th>Ligne</th>
+              <th>Localisation</th>
+              <th>Stock</th>
+              <th>Min</th>
+              <th>Criticité</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- lignes générées en JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Partie ajout / modification masquée au début -->
+    <section class="card hidden" id="card-form">
+      <h2>Ajouter / modifier une pièce</h2>
+      <form id="article-form">
+        <div>
+          <label for="famille">Famille</label>
+          <select id="famille" required>
+            <option value="">-- choisir --</option>
+            <option>Mécanique</option>
+            <option>Électricité</option>
+            <option>Visserie</option>
+            <option>Machine</option>
+            <option>Autre</option>
+          </select>
+        </div>
+        <div>
+          <label for="sous_famille">Sous-famille</label>
+          <input id="sous_famille" placeholder="Roulement, vis M8, etc..." />
+        </div>
+        <div class="full">
+          <label for="designation">Désignation</label>
+          <input id="designation" required placeholder="Ex: Roulement 6204 2RS" />
+        </div>
+        <div>
+          <label for="code_interne">Référence</label>
+          <input id="code_interne" placeholder="Code interne / réf pièce" />
+        </div>
+        <div>
+          <label for="machine">Machine associée</label>
+          <input id="machine" placeholder="Ex: Convoyeur 1" />
+        </div>
+        <div>
+          <label for="ligne">Ligne</label>
+          <input id="ligne" placeholder="Ex: 62, 63..." />
+        </div>
+
+        <!-- Localisation structurée -->
+        <div>
+          <label for="loc_allee">Allée</label>
+          <select id="loc_allee">
+            <option value="">--</option>
+            <option>A</option><option>B</option><option>C</option><option>D</option>
+            <option>E</option><option>F</option><option>G</option><option>H</option>
+            <option>I</option><option>J</option><option>K</option><option>L</option>
+            <option>M</option><option>N</option><option>O</option><option>P</option>
+            <option>Q</option><option>R</option>
+            <option>Visserie</option>
+          </select>
+        </div>
+        <div>
+          <label for="loc_etagere">Étagère</label>
+          <select id="loc_etagere">
+            <option value="">--</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+          </select>
+        </div>
+        <div>
+          <label for="loc_emplacement">Emplacement</label>
+          <select id="loc_emplacement">
+            <option value="">--</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option><option>9</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="stock_actuel">Stock actuel</label>
+          <input id="stock_actuel" type="number" min="0" value="0" />
+        </div>
+        <div>
+          <label for="unite">Unité</label>
+          <select id="unite">
+            <option value="">-- choisir --</option>
+            <option value="pcs">pcs</option>
+            <option value="m">m</option>
+            <option value="cm">cm</option>
+            <option value="mm">mm</option>
+            <option value="L">L</option>
+            <option value="mL">mL</option>
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="bar">bar</option>
+            <option value="N.m">N·m</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div>
+          <label for="stock_min">Stock min</label>
+          <input id="stock_min" type="number" min="0" value="0" />
+        </div>
+        <div>
+          <label for="stock_max">Stock max</label>
+          <input id="stock_max" type="number" min="0" value="0" />
+        </div>
+        <div>
+          <label for="criticite">Criticité</label>
+          <select id="criticite">
+            <option value="">--</option>
+            <option value="A">A (critique)</option>
+            <option value="B">B (important)</option>
+            <option value="C">C (standard)</option>
+          </select>
+        </div>
+        <div class="full">
+          <label for="commentaire">Commentaire</label>
+          <textarea id="commentaire" placeholder="Infos supplémentaires si besoin"></textarea>
+        </div>
+        <input type="hidden" id="editing-id" />
+      </form>
+      <div class="actions">
+        <button class="btn-primary" id="btn-save">Enregistrer la pièce</button>
+        <button class="btn-secondary" id="btn-reset">Annuler / nouvelle</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bouton d'aide flottant -->
+  <button class="help-button" id="btn-help">?</button>
+
+  <!-- Panneau d'aide flottant -->
+  <div class="help-panel hidden" id="help-panel">
+    <div class="help-panel-header">
+      <h3>Aide d'utilisation</h3>
+      <button class="help-close" id="btn-help-close">X</button>
+    </div>
+    <ul>
+      <li><strong>Rechercher une pièce :</strong> utilisez la barre en haut (ex : "roulement", "M8", "courroie").</li>
+      <li><strong>Filtrer :</strong> utilisez les menus "Famille" et "Criticité" pour restreindre la liste.</li>
+      <li><strong>Ajouter / modifier :</strong> cliquez sur "Ajouter / modifier une pièce" en haut à droite.</li>
+      <li><strong>Modifier une pièce :</strong> cliquez sur le bouton <em>Modif</em> en bout de ligne.</li>
+      <li><strong>Supprimer une pièce :</strong> cliquez sur <em>Suppr</em>, puis confirmez.</li>
+      <li><strong>Exporter en CSV :</strong> le bouton "Exporter en CSV" crée un fichier ouvrable dans Excel.</li>
+      <li><strong>Vider la base :</strong> le bouton "Vider la base locale" supprime toutes les données stockées dans ce navigateur.</li>
+      <li><strong>Données :</strong> tout est stocké localement sur l'appareil (localStorage).</li>
+    </ul>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "stock_baptou_articles";
+
+    function loadArticles() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+
+    function saveArticles(articles) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
+    }
+
+    function resetForm() {
+      document.getElementById("article-form").reset();
+      document.getElementById("editing-id").value = "";
+    }
+
+    function normalize(str) {
+      return (str || "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      const search = normalize(document.getElementById("search").value);
+      const filterFamille = document.getElementById("filter-famille").value;
+      const filterCriticite = document.getElementById("filter-criticite").value;
+
+      const articles = loadArticles();
+
+      articles
+        .filter(a => {
+          const text = normalize(
+            (a.code_interne || "") + " " +
+            (a.designation || "") + " " +
+            (a.sous_famille || "") + " " +
+            (a.famille || "") + " " +
+            (a.machine || "") + " " +
+            (a.ligne || "") + " " +
+            (a.localisation || "")
+          );
+
+          if (search && !text.includes(search)) return false;
+          if (filterFamille && a.famille !== filterFamille) return false;
+          if (filterCriticite && a.criticite !== filterCriticite) return false;
+          return true;
+        })
+        .forEach(a => {
+          const tr = document.createElement("tr");
+          if (Number(a.stock_actuel) < Number(a.stock_min)) {
+            tr.classList.add("low-stock");
+          }
+
+          const tdCode = document.createElement("td");
+          tdCode.textContent = a.code_interne || "";
+          tr.appendChild(tdCode);
+
+          const tdDes = document.createElement("td");
+          tdDes.textContent = a.designation || "";
+          tr.appendChild(tdDes);
+
+          const tdFam = document.createElement("td");
+          tdFam.textContent = a.famille || "";
+          tr.appendChild(tdFam);
+
+          const tdMach = document.createElement("td");
+          tdMach.textContent = a.machine || "";
+          tr.appendChild(tdMach);
+
+          const tdLigne = document.createElement("td");
+          tdLigne.textContent = a.ligne || "";
+          tr.appendChild(tdLigne);
+
+          const tdLoc = document.createElement("td");
+          tdLoc.textContent = a.localisation || "";
+          tr.appendChild(tdLoc);
+
+          const tdStock = document.createElement("td");
+          tdStock.textContent = a.stock_actuel ?? "";
+          tr.appendChild(tdStock);
+
+          const tdMin = document.createElement("td");
+          tdMin.textContent = a.stock_min ?? "";
+          tr.appendChild(tdMin);
+
+          const tdCrit = document.createElement("td");
+          if (a.criticite) {
+            const span = document.createElement("span");
+            span.textContent = a.criticite;
+            span.classList.add("badge", "badge-" + a.criticite);
+            tdCrit.appendChild(span);
+          }
+          tr.appendChild(tdCrit);
+
+          const tdActions = document.createElement("td");
+          const btnEdit = document.createElement("button");
+          btnEdit.textContent = "Modif";
+          btnEdit.title = "Modifier";
+          btnEdit.className = "btn-secondary";
+          btnEdit.style.marginRight = "4px";
+          btnEdit.onclick = () => editArticle(a.id);
+
+          const btnDel = document.createElement("button");
+          btnDel.textContent = "Suppr";
+          btnDel.title = "Supprimer";
+          btnDel.className = "btn-danger";
+          btnDel.onclick = () => deleteArticle(a.id);
+
+          tdActions.appendChild(btnEdit);
+          tdActions.appendChild(btnDel);
+          tr.appendChild(tdActions);
+
+          tbody.appendChild(tr);
+        });
+    }
+
+    function deleteArticle(id) {
+      if (!confirm("Supprimer cette pièce ?")) return;
+      let articles = loadArticles();
+      articles = articles.filter(a => a.id !== id);
+      saveArticles(articles);
+      renderTable();
+    }
+
+    function editArticle(id) {
+      const articles = loadArticles();
+      const a = articles.find(x => x.id === id);
+      if (!a) return;
+
+      document.getElementById("famille").value = a.famille || "";
+      document.getElementById("sous_famille").value = a.sous_famille || "";
+      document.getElementById("designation").value = a.designation || "";
+      document.getElementById("code_interne").value = a.code_interne || "";
+      document.getElementById("machine").value = a.machine || "";
+      document.getElementById("ligne").value = a.ligne || "";
+
+      const loc = a.localisation || "";
+      const parts = loc.split("-");
+      document.getElementById("loc_allee").value = parts[0] || "";
+      document.getElementById("loc_etagere").value = parts[1] || "";
+      document.getElementById("loc_emplacement").value = parts[2] || "";
+
+      document.getElementById("stock_actuel").value = a.stock_actuel ?? 0;
+      document.getElementById("unite").value = a.unite || "";
+      document.getElementById("stock_min").value = a.stock_min ?? 0;
+      document.getElementById("stock_max").value = a.stock_max ?? 0;
+      document.getElementById("criticite").value = a.criticite || "";
+      document.getElementById("commentaire").value = a.commentaire || "";
+      document.getElementById("editing-id").value = a.id;
+
+      const cardForm = document.getElementById("card-form");
+      const btnToggle = document.getElementById("btn-toggle-form");
+      cardForm.classList.remove("hidden");
+      btnToggle.textContent = "Fermer la saisie pièce";
+    }
+
+    function articlesToCSV(articles) {
+      const headers = [
+        "id",
+        "famille",
+        "sous_famille",
+        "designation",
+        "code_interne",
+        "machine",
+        "ligne",
+        "localisation",
+        "stock_actuel",
+        "unite",
+        "stock_min",
+        "stock_max",
+        "criticite",
+        "commentaire"
+      ];
+      const lines = [];
+      lines.push(headers.join(";"));
+      for (const a of articles) {
+        const row = headers.map(h => {
+          let val = a[h] != null ? String(a[h]) : "";
+          val = val.replace(/"/g, '""');
+          return `"${val}"`;
+        });
+        lines.push(row.join(";"));
+      }
+      return lines.join("\r\n");
+    }
+
+    function exportCSV() {
+      const articles = loadArticles();
+      if (!articles.length) {
+        alert("Aucune donnée à exporter.");
+        return;
+      }
+      const csv = articlesToCSV(articles);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "stock_maintenance.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("btn-save").addEventListener("click", () => {
+      const fam = document.getElementById("famille").value;
+      const des = document.getElementById("designation").value;
+      if (!fam || !des) {
+        alert("Famille et désignation sont obligatoires.");
+        return;
+      }
+
+      const allee = document.getElementById("loc_allee").value;
+      const etag = document.getElementById("loc_etagere").value;
+      const empl = document.getElementById("loc_emplacement").value;
+      const localisation = [allee, etag, empl].filter(Boolean).join("-");
+
+      const article = {
+        id: document.getElementById("editing-id").value || crypto.randomUUID(),
+        famille: fam,
+        sous_famille: document.getElementById("sous_famille").value,
+        designation: des,
+        code_interne: document.getElementById("code_interne").value,
+        machine: document.getElementById("machine").value,
+        ligne: document.getElementById("ligne").value,
+        localisation: localisation,
+        stock_actuel: Number(document.getElementById("stock_actuel").value || 0),
+        unite: document.getElementById("unite").value,
+        stock_min: Number(document.getElementById("stock_min").value || 0),
+        stock_max: Number(document.getElementById("stock_max").value || 0),
+        criticite: document.getElementById("criticite").value,
+        commentaire: document.getElementById("commentaire").value
+      };
+
+      let articles = loadArticles();
+      const existingIndex = articles.findIndex(a => a.id === article.id);
+      if (existingIndex >= 0) {
+        articles[existingIndex] = article;
+      } else {
+        articles.push(article);
+      }
+      saveArticles(articles);
+      resetForm();
+      renderTable();
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      resetForm();
+    });
+
+    document.getElementById("search").addEventListener("input", renderTable);
+    document.getElementById("filter-famille").addEventListener("change", renderTable);
+    document.getElementById("filter-criticite").addEventListener("change", renderTable);
+
+    document.getElementById("btn-clear-storage").addEventListener("click", () => {
+      if (!confirm("Vider toute la base locale ?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderTable();
+    });
+
+    document.getElementById("btn-toggle-form").addEventListener("click", () => {
+      const cardForm = document.getElementById("card-form");
+      const btn = document.getElementById("btn-toggle-form");
+      const isHidden = cardForm.classList.contains("hidden");
+      if (isHidden) {
+        cardForm.classList.remove("hidden");
+        btn.textContent = "Fermer la saisie pièce";
+      } else {
+        cardForm.classList.add("hidden");
+        btn.textContent = "Ajouter / modifier une pièce";
+      }
+    });
+
+    document.getElementById("btn-export-csv").addEventListener("click", exportCSV);
+
+    // Aide : ouvrir / fermer
+    const btnHelp = document.getElementById("btn-help");
+    const helpPanel = document.getElementById("help-panel");
+    const btnHelpClose = document.getElementById("btn-help-close");
+
+    btnHelp.addEventListener("click", () => {
+      helpPanel.classList.toggle("hidden");
+    });
+
+    btnHelpClose.addEventListener("click", () => {
+      helpPanel.classList.add("hidden");
+    });
+
+    renderTable();
+    document.getElementById("search").focus();
+  </script>
+</body>
+</html>
